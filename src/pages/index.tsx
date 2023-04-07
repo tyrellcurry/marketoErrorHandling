@@ -65,11 +65,13 @@ function Home() {
                 <div className="top pt-4">
                     <div className="flex gap-5">
                         <div className="flex flex-col w-full">
-                          <div className="pb-2">
-                            <label className="font-semibold" htmlFor="input">
-                                Paste Your Original HTML Code:
-                            </label>
-                          </div>
+                            <div className="pb-2">
+                                <label
+                                    className="font-semibold"
+                                    htmlFor="input">
+                                    Paste Your Original HTML Code:
+                                </label>
+                            </div>
                             <textarea
                                 className="p-1 min-h-[300px] max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md"
                                 rows={10}
@@ -81,16 +83,15 @@ function Home() {
                             />
                         </div>
                         <div className="flex flex-col w-full">
-                          <div className="pb-2">
-
-                            <label
-                                className="font-semibold"
-                                htmlFor="inputErrors">
-                                Paste In The Marketo Errors:
-                            </label>
-                          </div>
+                            <div className="pb-2">
+                                <label
+                                    className="font-semibold"
+                                    htmlFor="inputErrors">
+                                    Paste In The Marketo Errors:
+                                </label>
+                            </div>
                             <textarea
-                                className="p-1 min-h-[300px] max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md"
+                                className="p-1 min-h-[300px] max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md focus:rounded-md"
                                 rows={10}
                                 placeholder="Paste your Marketo errors here"
                                 id="inputErrors"
@@ -100,48 +101,63 @@ function Home() {
                             />
                         </div>
                     </div>
+                    <div>
+                        <div className="flex items-center pt-3 py-2 gap-1">
+                            <p>Input For Appending Duplicate ID's:</p>
+                            <input
+                                className="px-1 w-full max-w-[100px] border-slate-500 border-2 rounded-md"
+                                placeholder="Eg. _two"
+                            />
+                        </div>
+                        <p>
+                            If you leave this blank, the default that will be <span className="font-semibold">_two</span>.
+                        </p>
+                    </div>
                     <button
                         className="bg-blue-600 px-3 py-1 mt-3 rounded-md text-white text-2xl hover:bg-blue-700"
                         type="submit">
                         Process
                     </button>
                 </div>
-                {outputCode && <div className="bottom pt-5">
-                    <div>
-                        <div>                            
-                            <div className="pb-1">
-                            <label className="font-semibold" htmlFor="output">
-                                Output code:
-                            </label>
+                {outputCode && (
+                    <div className="bottom pt-5">
+                        <div>
+                            <div>
+                                <div className="pb-1">
+                                    <label
+                                        className="font-semibold"
+                                        htmlFor="output">
+                                        Output code:
+                                    </label>
+                                </div>
                             </div>
+                            <textarea
+                                className="p-1 h-full max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md"
+                                rows={10}
+                                id="output"
+                                name="output"
+                                value={outputCode}
+                                readOnly
+                            />
                         </div>
-                        <textarea
-                            className="p-1 h-full max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md"
-                            rows={10}
-                            id="output"
-                            name="output"
-                            value={outputCode}
-                            readOnly
-                        />
+                        <div className="flex gap-2 bg-slate-200 w-fit p-2 rounded-lg items-center my-3">
+                            <CC content={outputCode} />
+                            <p className="font-semibold">
+                                👈 Click to copy output code to clipboad
+                            </p>
+                        </div>
+                        <div className="errors">
+                            Unused Meta Tags Removed:{" "}
+                            <span
+                                className={`${
+                                    errorsRemoved > 0 && "font-semibold"
+                                }`}>
+                                {errorsRemoved}
+                            </span>
+                            {errorsRemoved > 0 && <span> 😱</span>}
+                        </div>
                     </div>
-                    <div className="flex gap-2 bg-slate-200 w-fit p-2 rounded-lg items-center my-3">
-                                <CC content={outputCode} />
-                                <p className="font-semibold">
-                                    👈 Click to copy output code to clipboad
-                                </p>
-                            </div>
-                    <div className="errors">
-                        Unused Meta Tags Removed:{" "}
-                        <span
-                            className={`${
-                                errorsRemoved > 0 && "font-semibold"
-                            }`}>
-                            {errorsRemoved}
-                        </span>
-                        {errorsRemoved > 0 && <span> 😱</span>}
-                    </div>
-                </div>}
-                
+                )}
             </form>
         </main>
     );
