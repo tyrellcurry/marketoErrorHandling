@@ -106,7 +106,7 @@ function Home() {
                         Process
                     </button>
                 </div>
-                <div className="bottom pt-5">
+                {outputCode && <div className="bottom pt-5">
                     <div>
                         <div>                            
                             <div className="pb-1">
@@ -140,7 +140,8 @@ function Home() {
                         </span>
                         {errorsRemoved > 0 && <span> 😱</span>}
                     </div>
-                </div>
+                </div>}
+                
             </form>
         </main>
     );
