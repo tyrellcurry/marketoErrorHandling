@@ -39,7 +39,6 @@ function Home() {
     const handleSubmit = (event: { preventDefault: () => void }) => {
         event.preventDefault();
         const lines = errorCode.split("\n");
-        console.log(lines);
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
@@ -56,8 +55,6 @@ function Home() {
                 duplicateIds.push(id);
             }
         }
-        console.log(duplicateIds);
-        // console.log(unusedIds);
         setErrorsRemoved(unusedIds.length);
         const pattern = new RegExp(
             `<meta[^>]+id="(${unusedIds.join("|")})"[^>]*>`,
@@ -67,43 +64,8 @@ function Home() {
             .replace(pattern, "")
             .replace(/^\s*\n/gm, "");
 
-        console.log(processedCode);
-        let idCounts = {};
         const uniqueDuplicateIds = duplicateIds.filter((item, index) => {
             return duplicateIds.indexOf(item) === index;
-        });
-        uniqueDuplicateIds.forEach((id) => {
-            let count = idCounts[id] || 0;
-
-            // Define the regular expression to find the id attribute with the current value
-            const regex = new RegExp(`id="${id}"`, "g");
-
-            // Find all matches of the id attribute with the current value
-            const matches = processedCode.match(regex) || [];
-
-            // Loop over each match and update the id with an incremented counter
-            let isFirstMatch = true;
-            matches.forEach((match) => {
-                if (isFirstMatch) {
-                    isFirstMatch = false;
-                    return;
-                }
-
-                // Increment the counter for this duplicate ID
-                count++;
-
-                // Append the count to the ID
-                const newId = `${id}_${count}`;
-
-                // Replace the id attribute with the updated value
-                processedCode = processedCode.replace(
-                    match,
-                    match.replace(regex, `id="${newId}"`)
-                );
-            });
-
-            // Update the count for this ID
-            idCounts[id] = count;
         });
 
         setOutputCode(processedCode);
