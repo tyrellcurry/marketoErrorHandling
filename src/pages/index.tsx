@@ -1,11 +1,16 @@
 import { SetStateAction, useState } from "react";
 import dynamic from "next/dynamic";
+import Switch from "@mui/material/Switch";
 
 function Home() {
     const [inputCode, setInputCode] = useState("");
     const [errorCode, setErrorCode] = useState("");
+    const [hasDuplicateID, setHasDuplicateID] = useState<boolean>(false);
     const [outputCode, setOutputCode] = useState("");
     const [errorsRemoved, setErrorsRemoved] = useState<number>(0);
+    const [isChecked, setIsChecked] = useState<boolean>(false);
+
+    const label = { inputProps: { "aria-label": "Switch demo" } };
 
     const ids: any[] = [];
 
@@ -23,9 +28,11 @@ function Home() {
         setInputCode(event.target.value);
     };
     const handleErrorChange = (event: {
-        target: { value: SetStateAction<string> };
+        target: { value: SetStateAction<any> };
     }) => {
-        setErrorCode(event.target.value);
+        const newErrorCode = event.target.value;
+        setErrorCode(newErrorCode);
+        setHasDuplicateID(newErrorCode.includes("Duplicate Element Id"));
     };
 
     const handleSubmit = (event: { preventDefault: () => void }) => {
@@ -51,6 +58,11 @@ function Home() {
             .replace(/^\s*\n/gm, "");
         setOutputCode(processedCode);
     };
+    const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+        setIsChecked(event.target.checked);
+    };
+
+    console.log(hasDuplicateID);
 
     return (
         <main className="bg-slate-100 min-h-screen px-[10vw] py-12">
@@ -101,18 +113,46 @@ function Home() {
                             />
                         </div>
                     </div>
-                    <div>
-                        <div className="flex items-center pt-3 py-2 gap-1">
-                            <p>Input For Appending Duplicate ID's:</p>
-                            <input
-                                className="px-1 w-full max-w-[100px] border-slate-500 border-2 rounded-md"
-                                placeholder="Eg. _two"
-                            />
+                    {hasDuplicateID && (
+                        <div className="pt-4">
+                            <p>
+                                It looks like you have some duplicate ID's in
+                                your code.
+                            </p>
+                            <p>Would you like to fix this?</p>
+                            <div className="mt-2 flex items-center">
+                                <Switch
+                                className="-ml-3"
+                                    {...label}
+                                    onChange={handleCheckboxChange}
+                                />
+                                <p>{isChecked ? "Yes" : "No"}</p>
+                            </div>
+                            {isChecked && (
+                                <div className="pt-2 pb-1">
+                                    <p className="text-xl pb-1 font-semibold">Great 🙌!</p>
+                                    <div className="flex items-center gap-1">
+                                        <p>
+                                            Customize what to append the Duplicate ID:
+                                        </p>
+                                        <input
+                                            className="px-1 w-full max-w-[100px] border-slate-500 border-2 rounded-md"
+                                            placeholder="Eg. _two"
+                                        />
+                                    </div>                                    
+                                    <p>
+                                        If you leave this blank, the default
+                                        that will be{" "}
+                                        <span className="font-semibold">
+                                            _two
+                                        </span>
+                                        .
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                        <p>
-                            If you leave this blank, the default that will be <span className="font-semibold">_two</span>.
-                        </p>
-                    </div>
+                    )}
+
                     <button
                         className="bg-blue-600 px-3 py-1 mt-3 rounded-md text-white text-2xl hover:bg-blue-700"
                         type="submit">
