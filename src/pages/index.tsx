@@ -1,3 +1,6 @@
+import * as React from "react";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 import { SetStateAction, useState } from "react";
 import dynamic from "next/dynamic";
 import Switch from "@mui/material/Switch";
@@ -9,6 +12,8 @@ function Home() {
     const [outputCode, setOutputCode] = useState("");
     const [errorsRemoved, setErrorsRemoved] = useState<number>(0);
     const [isChecked, setIsChecked] = useState<boolean>(false);
+    const [showSpinner, setShowSpinner] = useState(false);
+    const [showOutput, setShowOutput] = useState(false);
 
     const label = { inputProps: { "aria-label": "Switch demo" } };
 
@@ -68,7 +73,17 @@ function Home() {
             return duplicateIds.indexOf(item) === index;
         });
 
+        isChecked && (console.log("hello"), console.log("yes!"));
+
         setOutputCode(processedCode);
+
+        // Showing the spinner for UI purposes only
+        setShowSpinner(true);
+        setShowOutput(false);
+        setTimeout(() => {
+            setShowSpinner(false);
+            setShowOutput(true);
+        }, 1500);
     };
     const handleCheckboxChange = (event: {
         target: { checked: boolean | ((prevState: boolean) => boolean) };
@@ -78,11 +93,13 @@ function Home() {
 
     console.log(hasDuplicateID);
 
+    console.log(showOutput);
+
     return (
         <main className="bg-slate-100 min-h-screen px-[10vw] py-12">
             <h1 className="font-extrabold text-center text-6xl pb-4">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center leading-tight">
-                    Quickly Remove Unused Meta Tags <br />
+                    Quickly Fix Unused Meta Tags and <br /> Duplicate IDs
                     from Marketo Email Templates
                 </span>{" "}
                 🚀
@@ -134,7 +151,7 @@ function Home() {
                                 your code.
                             </p>
                             <p>Would you like to fix this?</p>
-                            <div className="mt-2 flex items-center">
+                            <div className="mt-3 flex items-center">
                                 <Switch
                                     className="-ml-3"
                                     {...label}
@@ -143,27 +160,25 @@ function Home() {
                                 <p>{isChecked ? "Yes" : "No"}</p>
                             </div>
                             {isChecked && (
-                                <div className="pt-2 pb-1">
+                                <div className="py-4 pb-3">
                                     <p className="text-xl pb-1 font-semibold">
                                         Great 🙌!
                                     </p>
-                                    <div className="flex items-center gap-1">
-                                        <p>
-                                            Customize what to append the
-                                            Duplicate ID:
-                                        </p>
-                                        <input
-                                            className="px-1 w-full max-w-[100px] border-slate-500 border-2 rounded-md"
-                                            placeholder="Eg. _two"
-                                        />
-                                    </div>
                                     <p>
-                                        If you leave this blank, the default
-                                        that will be{" "}
+                                        The matching duplicate IDs found will
+                                        append in increments like this:{" "}
                                         <span className="font-semibold">
-                                            _two
+                                            __two, __three, __four etc..
                                         </span>
                                         .
+                                    </p>
+                                    <p>
+                                        Example:
+                                        <span className="font-semibold">
+                                            {" "}
+                                            HeroTitle, HeroTitle__two,
+                                            HeroTitle__three
+                                        </span>
                                     </p>
                                 </div>
                             )}
@@ -176,7 +191,14 @@ function Home() {
                         Process
                     </button>
                 </div>
-                {outputCode && (
+                {showSpinner && (
+                    <div className="pt-5">
+                        <Box sx={{ display: "flex" }}>
+                            <CircularProgress />
+                        </Box>
+                    </div>
+                )}
+                {outputCode && showOutput && (
                     <div className="bottom pt-5">
                         <div>
                             <div>
