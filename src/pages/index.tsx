@@ -12,7 +12,8 @@ function Home() {
 
     const label = { inputProps: { "aria-label": "Switch demo" } };
 
-    const ids: any[] = [];
+    const unusedIds: any[] = [];
+    const duplicateIds: any[] = [];
 
     const CC = dynamic(
         () =>
@@ -44,21 +45,72 @@ function Home() {
             const line = lines[i];
             if (line.startsWith("Warning: Unused Variable: ")) {
                 const id = line.substring(25).trim();
-                ids.push(id);
+                unusedIds.push(id);
+            } else if (line.startsWith("Error: Duplicate Element Id: ")) {
+                let id = line.substring(25).trim();
+                const prefix = "Id: ";
+                const index = id.indexOf(prefix);
+                if (index !== -1) {
+                    id = id.substring(index + prefix.length);
+                }
+                duplicateIds.push(id);
             }
         }
-        console.log(ids);
-        setErrorsRemoved(ids.length);
+        console.log(duplicateIds);
+        // console.log(unusedIds);
+        setErrorsRemoved(unusedIds.length);
         const pattern = new RegExp(
-            `<meta[^>]+id="(${ids.join("|")})"[^>]*>`,
+            `<meta[^>]+id="(${unusedIds.join("|")})"[^>]*>`,
             "g"
         );
-        const processedCode = inputCode
+        let processedCode = inputCode
             .replace(pattern, "")
             .replace(/^\s*\n/gm, "");
+
+        console.log(processedCode);
+        let idCounts = {};
+        const uniqueDuplicateIds = duplicateIds.filter((item, index) => {
+            return duplicateIds.indexOf(item) === index;
+        });
+        uniqueDuplicateIds.forEach((id) => {
+            let count = idCounts[id] || 0;
+
+            // Define the regular expression to find the id attribute with the current value
+            const regex = new RegExp(`id="${id}"`, "g");
+
+            // Find all matches of the id attribute with the current value
+            const matches = processedCode.match(regex) || [];
+
+            // Loop over each match and update the id with an incremented counter
+            let isFirstMatch = true;
+            matches.forEach((match) => {
+                if (isFirstMatch) {
+                    isFirstMatch = false;
+                    return;
+                }
+
+                // Increment the counter for this duplicate ID
+                count++;
+
+                // Append the count to the ID
+                const newId = `${id}_${count}`;
+
+                // Replace the id attribute with the updated value
+                processedCode = processedCode.replace(
+                    match,
+                    match.replace(regex, `id="${newId}"`)
+                );
+            });
+
+            // Update the count for this ID
+            idCounts[id] = count;
+        });
+
         setOutputCode(processedCode);
     };
-    const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+    const handleCheckboxChange = (event: {
+        target: { checked: boolean | ((prevState: boolean) => boolean) };
+    }) => {
         setIsChecked(event.target.checked);
     };
 
@@ -122,7 +174,7 @@ function Home() {
                             <p>Would you like to fix this?</p>
                             <div className="mt-2 flex items-center">
                                 <Switch
-                                className="-ml-3"
+                                    className="-ml-3"
                                     {...label}
                                     onChange={handleCheckboxChange}
                                 />
@@ -130,16 +182,19 @@ function Home() {
                             </div>
                             {isChecked && (
                                 <div className="pt-2 pb-1">
-                                    <p className="text-xl pb-1 font-semibold">Great 🙌!</p>
+                                    <p className="text-xl pb-1 font-semibold">
+                                        Great 🙌!
+                                    </p>
                                     <div className="flex items-center gap-1">
                                         <p>
-                                            Customize what to append the Duplicate ID:
+                                            Customize what to append the
+                                            Duplicate ID:
                                         </p>
                                         <input
                                             className="px-1 w-full max-w-[100px] border-slate-500 border-2 rounded-md"
                                             placeholder="Eg. _two"
                                         />
-                                    </div>                                    
+                                    </div>
                                     <p>
                                         If you leave this blank, the default
                                         that will be{" "}
