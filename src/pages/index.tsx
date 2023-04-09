@@ -172,7 +172,7 @@ function Home() {
                     {hasDuplicateID && (
                         <div className="pt-4">
                             <p>
-                                It looks like you have some duplicate ID's in
+                                It looks like you have some duplicate IDs in
                                 your code.
                             </p>
                             <p>Would you like to fix this?</p>
