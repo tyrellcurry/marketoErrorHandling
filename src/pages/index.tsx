@@ -1,7 +1,6 @@
-import * as React from "react";
+import { SetStateAction, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import { SetStateAction, useState } from "react";
 import dynamic from "next/dynamic";
 import Switch from "@mui/material/Switch";
 
@@ -11,9 +10,11 @@ function Home() {
     const [hasDuplicateID, setHasDuplicateID] = useState<boolean>(false);
     const [outputCode, setOutputCode] = useState("");
     const [errorsRemoved, setErrorsRemoved] = useState<number>(0);
+    const [duplicateIdsFixed, setDuplicateIdsFixed] = useState<number>(0);
     const [isChecked, setIsChecked] = useState<boolean>(false);
     const [showSpinner, setShowSpinner] = useState(false);
     const [showOutput, setShowOutput] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     const label = { inputProps: { "aria-label": "Switch demo" } };
 
@@ -32,6 +33,7 @@ function Home() {
         target: { value: SetStateAction<string> };
     }) => {
         setInputCode(event.target.value);
+        setShowOutput(false);
     };
     const handleErrorChange = (event: {
         target: { value: SetStateAction<any> };
@@ -39,8 +41,8 @@ function Home() {
         const newErrorCode = event.target.value;
         setErrorCode(newErrorCode);
         setHasDuplicateID(newErrorCode.includes("Duplicate Element Id"));
+        setShowOutput(false);
     };
-
     const handleSubmit = (event: { preventDefault: () => void }) => {
         event.preventDefault();
         const lines = errorCode.split("\n");
@@ -73,34 +75,57 @@ function Home() {
             return duplicateIds.indexOf(item) === index;
         });
 
-        isChecked && (console.log("hello"), console.log("yes!"));
+        setDuplicateIdsFixed(0);
 
-        setOutputCode(processedCode);
+        let updatedProcessedCode = processedCode;
+        if (isChecked) {
+            setDuplicateIdsFixed(duplicateIds.length);
+            uniqueDuplicateIds.forEach((id) => {
+                let i = 0;
+                updatedProcessedCode = updatedProcessedCode.replace(
+                    new RegExp(`id=[\\"\\']${id}[\\'\\"]`, "g"),
+                    (match) => {
+                        i++;
+                        if (i === 1) {
+                            return match;
+                        } else {
+                            if (match.includes(`"`)) {
+                                return `id="${id}__${i}"`;
+                            } else {
+                                return `id='${id}__${i}'`;
+                            }
+                        }
+                    }
+                );
+            });
+        }
+
+        setOutputCode(updatedProcessedCode);
 
         // Showing the spinner for UI purposes only
+        setShowError(false);
         setShowSpinner(true);
         setShowOutput(false);
         setTimeout(() => {
             setShowSpinner(false);
             setShowOutput(true);
-        }, 1500);
+            if (inputCode.length < 1 || errorCode.length < 1) {
+                setShowError(true);
+                setShowOutput(false);
+            }
+        }, 1150);
     };
     const handleCheckboxChange = (event: {
         target: { checked: boolean | ((prevState: boolean) => boolean) };
     }) => {
         setIsChecked(event.target.checked);
     };
-
-    console.log(hasDuplicateID);
-
-    console.log(showOutput);
-
     return (
         <main className="bg-slate-100 min-h-screen px-[10vw] py-12">
             <h1 className="font-extrabold text-center text-6xl pb-4">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center leading-tight">
-                    Quickly Fix Unused Meta Tags and <br /> Duplicate IDs
-                    from Marketo Email Templates
+                    Quickly Fix Unused Meta Tags and <br /> Duplicate IDs from
+                    Marketo Email Templates
                 </span>{" "}
                 🚀
             </h1>
@@ -168,7 +193,7 @@ function Home() {
                                         The matching duplicate IDs found will
                                         append in increments like this:{" "}
                                         <span className="font-semibold">
-                                            __two, __three, __four etc..
+                                            __2, __3, __4
                                         </span>
                                         .
                                     </p>
@@ -176,8 +201,8 @@ function Home() {
                                         Example:
                                         <span className="font-semibold">
                                             {" "}
-                                            HeroTitle, HeroTitle__two,
-                                            HeroTitle__three
+                                            HeroTitle, HeroTitle__2,
+                                            HeroTitle__3, HeroTitle__4
                                         </span>
                                     </p>
                                 </div>
@@ -198,6 +223,15 @@ function Home() {
                         </Box>
                     </div>
                 )}
+                {showError && (
+                    <div className="pt-5">
+                        <p className="font-semibold text-red-600">
+                            Please paste your HTML code and Marketo error
+                            messages in the boxes above 👆
+                        </p>
+                    </div>
+                )}
+
                 {outputCode && showOutput && (
                     <div className="bottom pt-5">
                         <div>
@@ -227,13 +261,15 @@ function Home() {
                         </div>
                         <div className="errors">
                             Unused Meta Tags Removed:{" "}
-                            <span
-                                className={`${
-                                    errorsRemoved > 0 && "font-semibold"
-                                }`}>
+                            <span className={"font-semibold"}>
                                 {errorsRemoved}
                             </span>
-                            {errorsRemoved > 0 && <span> 😱</span>}
+                        </div>
+                        <div className="errors">
+                            Duplicate IDs fixed:{" "}
+                            <span className={"font-semibold"}>
+                                {duplicateIdsFixed}
+                            </span>
                         </div>
                     </div>
                 )}
@@ -243,21 +279,3 @@ function Home() {
 }
 
 export default Home;
-
-// export default function Home() {
-
-//     return (
-//         <main>
-//             <div className="paste flex justify-around flex-wrap px-[10vw]">
-//                 <div className="col w-full max-w-[500px]">
-//                   <h2 className="text-2xl font-semibold pb-3">Paste your code here:</h2>
-//                   <textarea className="p-1 min-h-[300px] max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md" rows={10} placeholder="Paste your code here"></textarea>
-//                 </div>
-//                 <div className="col w-full max-w-[500px]">
-//                 <h2 className="text-2xl font-semibold pb-3">Paste your Marketo Errors here:</h2>
-//                 <textarea className="p-1 min-h-[300px] max-h-[300px] w-full border-slate-500 border-2 resize-none rounded-md" rows={10} placeholder="Paste your Marketo Errors here"></textarea>
-//                 </div>
-//             </div>
-//         </main>
-//     );
-// }
